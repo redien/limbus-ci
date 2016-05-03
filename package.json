@@ -1,0 +1,32 @@
+{
+  "name": "limbus-ci",
+  "version": "0.1.0",
+  "description": "A simple CI solution for testing extremely portable applications.",
+  "directories": {},
+  "devDependencies": {
+    "cucumber": "^0.10.2"
+  },
+  "scripts": {
+    "test": "cucumberjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redien/limbus-ci"
+  },
+  "keywords": [
+    "continuous",
+    "integration",
+    "continuous integration",
+    "ci",
+    "travis",
+    "circle",
+    "drone",
+    "appveyor"
+  ],
+  "author": "Jesper Oskarsson <jesosk@gmail.com>",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/redien/limbus-ci/issues"
+  },
+  "homepage": "https://github.com/redien/limbus-ci"
+}
