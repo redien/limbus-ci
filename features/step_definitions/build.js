@@ -10,14 +10,10 @@
 // If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 var Promise = require('promise');
+var shell = require('../../utilities/shell.js');
+var fs = require('../../utilities/filesystem.js');
 
-var execute = Promise.denodeify(require('child_process').exec);
-var readFile = Promise.denodeify(require('fs').readFile);
-var writeFile = Promise.denodeify(require('fs').writeFile);
-
-var parseResult = function (stdout) {
-    return JSON.parse(stdout);
-};
+var two_minutes = 2 * 60 * 1000;
 
 module.exports = function () {
     this.Given(/^I do not supply an image$/, function () {
@@ -41,8 +37,13 @@ module.exports = function () {
     });
 
     this.Given(/^I supply a succeeding script$/, function () {
-        this.script = 'generated/succeeding_script.sh';
-        return writeFile(this.script, 'echo Success');
+        this.script = 'temp/succeeding_script.sh';
+        return fs.writeFile(this.script, '#!/bin/sh\necho Success');
+    });
+
+    this.Given(/^I supply a failing script$/, function () {
+        this.script = 'temp/failing_script.sh';
+        return fs.writeFile(this.script, '#!/bin/sh\ncommand-that-does-not-exist-should-fail');
     });
 
     this.Given(/^I supply a missing image$/, function () {
@@ -50,17 +51,22 @@ module.exports = function () {
         return Promise.resolve();
     });
 
-    this.When(/^I run the job$/, function () {
+    this.When(/^I run the job$/, {timeout: two_minutes}, function () {
         var world = this;
 
         var jobCommand = [
-            './bin/limbus-ci run job',
+            './bin/limbus-ci job',
             world.image,
             world.script
         ].join(' ');
 
-        return execute(jobCommand).then(function (stdout) {
-            world.result = parseResult(stdout);
+        return shell.execute(jobCommand).then(function (stdout) {
+            try {
+                world.result = JSON.parse(stdout);
+            } catch (error) {
+                return Promise.reject(new Error('Got error "' + error.message + '" trying to parse:\n' + stdout));
+            }
+
             return Promise.resolve();
         });
     });
@@ -69,7 +75,7 @@ module.exports = function () {
         if (this.result.status === status) {
             return Promise.resolve();
         } else {
-            return Promise.reject(new Error('Expected completion status to be \'' + status + '\' but the job returned \'' + world.result.status + '\''));
+            return Promise.reject(new Error('Expected completion status to be \'' + status + '\' but the job returned \'' + this.result.status + '\''));
         }
     });
 };

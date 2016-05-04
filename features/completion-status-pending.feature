@@ -11,7 +11,7 @@
 
 Feature: Completion Status Pending
     As a user of limbus-ci
-    I want to get a completion status of pending when the job cannot be run
+    I want to get a completion status of 'pending' when the job cannot be run
     So that I know which jobs I have left to configure
 
     Scenario: Running without an image and script

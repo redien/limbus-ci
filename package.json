@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "npm run-script build && cucumberjs",
-    "build": "rm bin/limbus-ci ; mkdir -p generated && echo \\#\\!/usr/bin/env node > generated/header && cat generated/header cli/limbus-ci.js > bin/limbus-ci && chmod +x bin/limbus-ci"
+    "build": "rm bin/limbus-ci ; mkdir -p temp && echo \\#\\!/usr/bin/env node > temp/header && cat temp/header cli/front-end.js > bin/limbus-ci && chmod +x bin/limbus-ci"
   },
   "repository": {
     "type": "git",
