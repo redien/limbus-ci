@@ -1,3 +1,3 @@
 #!/bin/sh
 
-../bin/limbus-ci job hashicorp/precise64 ../utility-scripts/ci-test.sh
+../bin/limbus-ci job ubuntu/trusty64 ../utility-scripts/ci-test.sh
