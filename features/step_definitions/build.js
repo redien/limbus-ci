@@ -47,7 +47,7 @@ module.exports = function () {
         return Promise.resolve();
     });
 
-    this.When(/^I run a job$/, function () {
+    this.When(/^I run the job$/, function () {
         var world = this;
 
         var jobCommand = './bin/limbus-ci run job' + (world.image ? ' ' + world.image : '');

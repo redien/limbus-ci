@@ -16,10 +16,10 @@ Feature: Completion Status Pending
 
     Scenario: Running without an image
         Given I do not supply an image to run
-        When I run a job
+        When I run the job
         Then I should get a completion status of 'pending'
 
     Scenario: Running with a missing image
         Given I supply a missing image
-        When I run a job
+        When I run the job
         Then I should get a completion status of 'pending'
