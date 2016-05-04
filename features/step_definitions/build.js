@@ -9,37 +9,40 @@
 // You should have received a copy of the CC0 Public Domain Dedication along with this software.
 // If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-var fs = require('fs');
-var child_process = require('child_process');
+var Promise = require('promise');
 
-if (process.version.match(/^0\.10/)) {
-    Promise = require('promise');
-}
-
-var execute = function (command) {
-    return new Promise(function (resolve, reject) {
-        child_process.exec(command, function (error, stdout, stderr) {
-            if (error) {
-                reject(new Error('"' + command + '"' + ' exited with code ' + error.code + ':\n' + stdout + '\n' + stderr));
-            } else {
-                resolve({
-                    exitCode: 0,
-                    stdout: stdout,
-                    stderr: stderr
-                });
-            }
-        });
-    });
-};
+var execute = Promise.denodeify(require('child_process').exec);
+var readFile = Promise.denodeify(require('fs').readFile);
+var writeFile = Promise.denodeify(require('fs').writeFile);
 
 var parseResult = function (stdout) {
     return JSON.parse(stdout);
 };
 
 module.exports = function () {
-    this.Given(/^I do not supply an image to run$/, function () {
+    this.Given(/^I do not supply an image$/, function () {
         this.image = '';
         return Promise.resolve();
+    });
+
+    this.Given(/^I supply an image$/, function () {
+        this.image = 'hashicorp/precise64';
+        return Promise.resolve();
+    });
+
+    this.Given(/^I do not supply a script$/, function () {
+        this.script = '';
+        return Promise.resolve();
+    });
+
+    this.Given(/^I supply a missing script$/, function () {
+        this.script = 'missing-script';
+        return Promise.resolve();
+    });
+
+    this.Given(/^I supply a succeeding script$/, function () {
+        this.script = 'generated/succeeding_script.sh';
+        return writeFile(this.script, 'echo Success');
     });
 
     this.Given(/^I supply a missing image$/, function () {
@@ -50,14 +53,14 @@ module.exports = function () {
     this.When(/^I run the job$/, function () {
         var world = this;
 
-        var jobCommand = './bin/limbus-ci run job' + (world.image ? ' ' + world.image : '');
+        var jobCommand = [
+            './bin/limbus-ci run job',
+            world.image,
+            world.script
+        ].join(' ');
 
-        return execute(jobCommand).then(function (result) {
-            world.exitCode = result.exitCode;
-            world.stderr = result.stderr;
-            world.stdout = result.stdout;
-            world.result = parseResult(result.stdout);
-
+        return execute(jobCommand).then(function (stdout) {
+            world.result = parseResult(stdout);
             return Promise.resolve();
         });
     });

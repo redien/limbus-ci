@@ -14,12 +14,20 @@ Feature: Completion Status Pending
     I want to get a completion status of pending when the job cannot be run
     So that I know which jobs I have left to configure
 
-    Scenario: Running without an image
-        Given I do not supply an image to run
+    Scenario: Running without an image and script
+        Given I do not supply an image
+        And I do not supply a script
         When I run the job
         Then I should get a completion status of 'pending'
 
     Scenario: Running with a missing image
         Given I supply a missing image
+        And I supply a succeeding script
+        When I run the job
+        Then I should get a completion status of 'pending'
+
+    Scenario: Running with a missing script
+        Given I supply an image
+        And I supply a missing script
         When I run the job
         Then I should get a completion status of 'pending'
