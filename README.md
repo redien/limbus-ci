@@ -51,7 +51,7 @@ npm link
 
 To run a job with a specific VM image use:
 ```
-limbus-ci run job IMAGE
+limbus-ci run job <image> <script>
 ```
 
 <a name="continuous-integration"></a>
