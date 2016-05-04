@@ -45,18 +45,18 @@ module.exports = function () {
     });
 
     this.Given(/^I supply a succeeding script$/, function () {
-        this.script = 'temp/succeeding_script.sh';
-        return fs.writeFile(this.script, '#!/bin/sh\necho Success');
+        this.script = 'succeeding_script.sh';
+        return fs.writeFile('temp/' + this.script, '#!/bin/sh\necho Success');
     });
 
     this.Given(/^I supply a failing script$/, function () {
-        this.script = 'temp/failing_script.sh';
-        return fs.writeFile(this.script, '#!/bin/sh\ncommand-that-does-not-exist-should-fail');
+        this.script = 'failing_script.sh';
+        return fs.writeFile('temp/' + this.script, '#!/bin/sh\ncommand-that-does-not-exist-should-fail');
     });
 
     this.Given(/^I supply a script with the contents:$/, function (contents) {
-        this.script = 'temp/script.sh';
-        return fs.writeFile(this.script, contents);
+        this.script = 'script.sh';
+        return fs.writeFile('temp/' + this.script, contents);
     });
 
     this.Given(/^I supply a missing image$/, function () {
@@ -68,12 +68,12 @@ module.exports = function () {
         var world = this;
 
         var jobCommand = [
-            './bin/limbus-ci job',
+            '../bin/limbus-ci job',
             world.image,
             world.script
         ].join(' ');
 
-        return shell.execute(jobCommand).then(function (stdout) {
+        return shell.execute(jobCommand, {cwd: 'temp'}).then(function (stdout) {
             world.stdout = stdout;
             return Promise.resolve();
         }, function (error) {

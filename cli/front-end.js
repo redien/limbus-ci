@@ -15,12 +15,12 @@ var shell = require('../utilities/shell.js');
 var fs = require('../utilities/filesystem.js');
 
 var vagrantInit = function (image, script) {
-    return fs.deleteFile('temp/Vagrantfile')
+    return fs.deleteFile('Vagrantfile')
     .then(function (exists) {
-        return fs.copyFile(script, 'temp/provisioning_script.sh');
+        return fs.copyFile(script, 'provisioning_script.sh');
     })
     .then(function () {
-        return fs.writeFile('temp/Vagrantfile', `
+        return fs.writeFile('Vagrantfile', `
 Vagrant.configure(2) do |config|
   config.vm.box = "${image}"
   config.vm.box_check_update = false
@@ -31,11 +31,11 @@ end
 };
 
 var vagrantUp = function () {
-    return shell.execute('vagrant up', {cwd: 'temp'});
+    return shell.execute('vagrant up');
 };
 
 var vagrantDestroy = function () {
-    return shell.execute('vagrant destroy -f', {cwd: 'temp'});
+    return shell.execute('vagrant destroy -f');
 };
 
 var pending = '{"status": "pending"}';
