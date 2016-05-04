@@ -12,6 +12,10 @@
 var fs = require('fs');
 var child_process = require('child_process');
 
+if (process.version.match(/^0\.10/)) {
+    Promise = require('promise');
+}
+
 var execute = function (command) {
     return new Promise(function (resolve, reject) {
         child_process.exec(command, function (error, stdout, stderr) {

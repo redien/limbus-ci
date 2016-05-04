@@ -29,5 +29,8 @@
   "bugs": {
     "url": "https://github.com/redien/limbus-ci/issues"
   },
-  "homepage": "https://github.com/redien/limbus-ci"
+  "homepage": "https://github.com/redien/limbus-ci",
+  "dependencies": {
+    "promise": "^7.1.1"
+  }
 }
