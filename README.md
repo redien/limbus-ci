@@ -37,6 +37,11 @@ You can also get the library by manually downloading and extracting the ZIP file
 <a name="usage"></a>
 ## Usage
 
+To run a job with a specific VM image use:
+```
+limbus-ci run job IMAGE_PATH
+```
+
 <a name="continuous-integration"></a>
 ## Continuous Integration
 Acceptance and unit tests are automatically run against all supported platforms.
