@@ -38,10 +38,15 @@ module.exports = function () {
         return Promise.resolve();
     });
 
+    this.Given(/^I supply a missing image$/, function () {
+        this.image = 'missing-image';
+        return Promise.resolve();
+    });
+
     this.When(/^I run a job$/, function () {
         var world = this;
 
-        var jobCommand = './bin/limbus-ci run job ' + world.image;
+        var jobCommand = './bin/limbus-ci run job' + (world.image ? ' ' + world.image : '');
 
         return execute(jobCommand).then(function (result) {
             world.exitCode = result.exitCode;
