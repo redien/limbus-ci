@@ -15,6 +15,14 @@ var fs = require('../../utilities/filesystem.js');
 
 var two_minutes = 2 * 60 * 1000;
 
+var parseResult = function (stdout) {
+    try {
+        return Promise.resolve(JSON.parse(stdout));
+    } catch (error) {
+        return Promise.reject(new Error('Got error "' + error.message + '" trying to parse:\n' + stdout));
+    }
+};
+
 module.exports = function () {
     this.Given(/^I do not supply an image$/, function () {
         this.image = '';
@@ -66,29 +74,47 @@ module.exports = function () {
         ].join(' ');
 
         return shell.execute(jobCommand).then(function (stdout) {
-            try {
-                world.result = JSON.parse(stdout);
-            } catch (error) {
-                return Promise.reject(new Error('Got error "' + error.message + '" trying to parse:\n' + stdout));
-            }
-
+            world.stdout = stdout;
+            return Promise.resolve();
+        }, function (error) {
+            world.error = error;
             return Promise.resolve();
         });
     });
 
     this.Then(/^I should get a completion status of '(\w*)'$/, function (status) {
-        if (this.result.status === status) {
-            return Promise.resolve();
-        } else {
-            return Promise.reject(new Error('Expected the completion status to be \'' + status + '\' but the job returned \'' + this.result.status + '\''));
+        if (this.error) {
+            return Promise.reject(error);
         }
+
+        return parseResult(this.stdout).then(function (result) {
+            if (result.status === status) {
+                return Promise.resolve();
+            } else {
+                return Promise.reject(new Error('Expected the completion status to be \'' + status + '\' but the job returned \'' + result.status + '\''));
+            }
+        });
     });
 
     this.Then(/^I should get a log containing '(.+)'$/, function (text) {
-        if (this.result.stdout.indexOf(text) !== -1) {
+        if (this.error) {
+            return Promise.reject(error);
+        }
+
+        return parseResult(this.stdout).then(function (result) {
+            if (result.stdout.indexOf(text) !== -1) {
+                return Promise.resolve();
+            } else {
+                return Promise.reject(new Error('Expected the log to contain \'' + text + '\' in:\n' + result.stdout));
+            }
+        });
+    });
+
+    this.Then('I should get an error saying "$text"', function (text) {
+        if (this.error.stderr.indexOf(text) !== -1) {
             return Promise.resolve();
         } else {
-            return Promise.reject(new Error('Expected the log to contain \'' + text + '\' in:\n' + this.result.stdout));
+            return Promise.reject(new Error('Expected an error \'' + text + '\' in:\n' + this.stderr));
         }
     });
 };

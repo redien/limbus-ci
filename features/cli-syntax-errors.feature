@@ -9,19 +9,18 @@
 # You should have received a copy of the CC0 Public Domain Dedication along with this software.
 # If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-Feature: Completion Status Pending
+Feature: CLI Syntax Errors
     As a user of limbus-ci
-    I want to get a completion status of 'pending' when the job cannot be run
-    So that I know which jobs I have left to configure
+    I want to get errors when I run the CLI commands incorrectly
+    So that I can correct my mistakes
 
-    Scenario: Running with a missing image
-        Given I supply a missing image
-        And I supply a succeeding script
+    Scenario: Running a job without an image
+        Given I do not supply an image
         When I run the job
-        Then I should get a completion status of 'pending'
+        Then I should get an error saying "error: missing required argument `image'"
 
-    Scenario: Running with a missing script
+    Scenario: Running a job without a script
         Given I supply an image
-        And I supply a missing script
+        And I do not supply a script
         When I run the job
-        Then I should get a completion status of 'pending'
+        Then I should get an error saying "error: missing required argument `script'"

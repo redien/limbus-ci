@@ -81,7 +81,7 @@ commander
     .version('0.1.0');
 
 commander
-    .command('job [image] [script]')
+    .command('job <image> <script>')
     .action(executeCommand(job));
 
 commander.parse(process.argv);
