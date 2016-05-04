@@ -10,7 +10,7 @@
     "cucumber": "^0.10.2"
   },
   "scripts": {
-    "test": "npm run-script install && cucumberjs",
+    "test": "npm install && cucumberjs",
     "install": "npm run-script build",
     "build": "rm -f bin/limbus-ci ; mkdir -p temp ; mkdir -p bin ; echo \\#\\!/usr/bin/env node > temp/header && cat temp/header cli/front-end.js > bin/limbus-ci && chmod +x bin/limbus-ci"
   },
