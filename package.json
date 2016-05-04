@@ -2,13 +2,17 @@
   "name": "limbus-ci",
   "version": "0.1.0",
   "description": "A simple CI solution for testing extremely portable applications.",
+  "bin": {
+      "limbus-ci": "bin/limbus-ci"
+  },
   "directories": {},
   "devDependencies": {
     "cucumber": "^0.10.2"
   },
   "scripts": {
     "test": "npm run-script build && cucumberjs",
-    "build": "rm bin/limbus-ci ; mkdir -p temp && echo \\#\\!/usr/bin/env node > temp/header && cat temp/header cli/front-end.js > bin/limbus-ci && chmod +x bin/limbus-ci"
+    "build": "rm bin/limbus-ci ; mkdir -p temp && echo \\#\\!/usr/bin/env node > temp/header && cat temp/header cli/front-end.js > bin/limbus-ci && chmod +x bin/limbus-ci",
+    "install": "npm run-script build"
   },
   "repository": {
     "type": "git",
