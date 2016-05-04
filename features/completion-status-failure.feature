@@ -14,7 +14,7 @@ Feature: Completion Status Failure
     I want to get a completion status of 'failure' when the job fails
     So that I know which jobs failed to complete
 
-    Scenario: Running with failing script
+    Scenario: Running with a failing script
         Given I supply an image
         And I supply a failing script
         When I run the job

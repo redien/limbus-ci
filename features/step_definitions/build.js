@@ -46,6 +46,11 @@ module.exports = function () {
         return fs.writeFile(this.script, '#!/bin/sh\ncommand-that-does-not-exist-should-fail');
     });
 
+    this.Given(/^I supply a script with the contents:$/, function (contents) {
+        this.script = 'temp/script.sh';
+        return fs.writeFile(this.script, contents);
+    });
+
     this.Given(/^I supply a missing image$/, function () {
         this.image = 'missing-image';
         return Promise.resolve();
@@ -75,7 +80,15 @@ module.exports = function () {
         if (this.result.status === status) {
             return Promise.resolve();
         } else {
-            return Promise.reject(new Error('Expected completion status to be \'' + status + '\' but the job returned \'' + this.result.status + '\''));
+            return Promise.reject(new Error('Expected the completion status to be \'' + status + '\' but the job returned \'' + this.result.status + '\''));
+        }
+    });
+
+    this.Then(/^I should get a log containing '(.+)'$/, function (text) {
+        if (this.result.stdout.indexOf(text) !== -1) {
+            return Promise.resolve();
+        } else {
+            return Promise.reject(new Error('Expected the log to contain \'' + text + '\' in:\n' + this.result.stdout));
         }
     });
 };

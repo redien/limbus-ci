@@ -9,13 +9,26 @@
 # You should have received a copy of the CC0 Public Domain Dedication along with this software.
 # If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-Feature: Completion Status Success
+Feature: Job logs
     As a user of limbus-ci
-    I want to get a completion status of 'success' when the job succeeds
-    So that I know which jobs have run successfully
+    I want to get a log of the job that I ran
+    So that I can track down bugs and verify that it ran properly
 
     Scenario: Running with a succeeding script
         Given I supply an image
-        And I supply a succeeding script
+        And I supply a script with the contents:
+        """
+        echo dzwH9Hel8m8Mm7uwqec6v6aQ8tTzC9hJ
+        """
         When I run the job
-        Then I should get a completion status of 'success'
+        Then I should get a log containing 'dzwH9Hel8m8Mm7uwqec6v6aQ8tTzC9hJ'
+
+    Scenario: Running with a failing script
+        Given I supply an image
+        And I supply a script with the contents:
+        """
+        echo a7BmPR066MJPX37krMCGFolHBHBcOS4C
+        command-that-fails
+        """
+        When I run the job
+        Then I should get a log containing 'a7BmPR066MJPX37krMCGFolHBHBcOS4C'

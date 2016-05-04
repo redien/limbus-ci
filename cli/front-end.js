@@ -49,13 +49,12 @@ var job = function (image, script) {
         .then(vagrantUp)
         .then(function (stdout) {
             return vagrantDestroy().then(function () {
-                return Promise.resolve('{"status": "success", "stdout": "test"}');
+                return Promise.resolve('{"status": "success", "stdout": ' + JSON.stringify(stdout) + '}');
             });
         }, function (error) {
             if (error.stderr && error.stderr.indexOf('The SSH command responded with a non-zero exit status') !== -1) {
-                var escapedStdout = error.stdout.replace(/\\/g, '\\\\').replace(/"/, '\\"');
                 return vagrantDestroy().then(function () {
-                    return Promise.resolve('{"status": "failure", "stdout": "test"}');
+                    return Promise.resolve('{"status": "failure", "stdout": ' + JSON.stringify(error.stdout) + '}');
                 });
             } else if (error.stderr && error.stderr.indexOf('Couldn\'t open file') !== -1) {
                 return Promise.resolve(pending);
