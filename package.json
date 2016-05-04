@@ -7,7 +7,8 @@
     "cucumber": "^0.10.2"
   },
   "scripts": {
-    "test": "cucumberjs"
+    "test": "npm run-script build && cucumberjs",
+    "build": "cp limbus-ci.js bin/limbus-ci"
   },
   "repository": {
     "type": "git",
