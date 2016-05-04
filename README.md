@@ -3,8 +3,11 @@
 
 #### Introduction
 
-limbus-ci is a simple CI solution for testing applications that need support of a lot of platforms.
-By running bare-bones installations of different operating system installations limbus-ci can test applications on a wide array of different configurations that the end-user might use.
+limbus-ci is a simple CI solution for testing applications that need to support a lot of platforms.
+
+By running bare-bones installations of different operating systems limbus-ci can test applications on a wide array of different configurations that the end-user might use.
+
+limbus-ci provisions virtual machines using [Vagrant](https://www.vagrantup.com) and [VirtualBox](https://www.virtualbox.org/).
 
 #### Table of contents
 * [Installation](#installation)
@@ -16,30 +19,39 @@ By running bare-bones installations of different operating system installations 
 
 <a name="installation"></a>
 ## Installation
-limbus-ci runs using Node.js.
+To be able to provision virtual machines you will need [Vagrant](https://www.vagrantup.com) and [VirtualBox](https://www.virtualbox.org/) installed.
 
-You can install the CLI application through NPM.
+#### Installing limbus-ci
+You can install the CLI application through NPM:
 ```
 npm install -g limbus-ci
 ```
 
 #### Cloning with git
-Another way to get a hold of limbus-ci is to clone it from the git repository.
+Another way to get a hold of limbus-ci is to clone it from the git repository:
 
-To get the latest version:
 ```
 git clone https://github.com/redien/limbus-ci.git
+cd limbus-ci
+npm install
+npm link
 ```
 
 #### Download ZIP
 You can also get the library by manually downloading and extracting the ZIP file at: https://github.com/redien/limbus-ci/archive/master.zip
+
+And then install using:
+```
+npm install
+npm link
+```
 
 <a name="usage"></a>
 ## Usage
 
 To run a job with a specific VM image use:
 ```
-limbus-ci run job IMAGE_PATH
+limbus-ci run job IMAGE
 ```
 
 <a name="continuous-integration"></a>
@@ -48,8 +60,8 @@ Acceptance and unit tests are automatically run against all supported platforms.
 Tests are run using limbus-ci.
 
 #### Integration matrix
-| Platform | Build Status | Operating System |
-| :------- | :----------: | :--------------- |
+| Operating System | Build Status |
+| :--------------- | :----------: |
 |||
 
 <a name="development"></a>
