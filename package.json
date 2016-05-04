@@ -10,9 +10,9 @@
     "cucumber": "^0.10.2"
   },
   "scripts": {
-    "test": "npm run-script build && cucumberjs",
-    "build": "rm bin/limbus-ci ; mkdir -p temp && echo \\#\\!/usr/bin/env node > temp/header && cat temp/header cli/front-end.js > bin/limbus-ci && chmod +x bin/limbus-ci",
-    "install": "npm run-script build"
+    "test": "npm run-script install && cucumberjs",
+    "install": "npm run-script build",
+    "build": "rm bin/limbus-ci ; mkdir -p temp && echo \\#\\!/usr/bin/env node > temp/header && cat temp/header cli/front-end.js > bin/limbus-ci && chmod +x bin/limbus-ci"
   },
   "repository": {
     "type": "git",
