@@ -15,10 +15,8 @@ var execute = function (command, options) {
     return new Promise(function (resolve, reject) {
         require('child_process').exec(command, options, function (error, stdout, stderr) {
             if (error) {
-                Object.assign(error, {
-                    stdout: stdout,
-                    stderr: stderr
-                });
+                error.stdout = stdout;
+                error.stderr = stderr;
                 reject(error);
             } else {
                 resolve(stdout);
