@@ -23,6 +23,16 @@ var parseResult = function (stdout) {
     }
 };
 
+var executeJob = function (image, script) {
+    var jobCommand = [
+        '../bin/limbus-ci job',
+        image,
+        script
+    ].join(' ');
+
+    return shell.execute(jobCommand, {cwd: 'temp'});
+};
+
 module.exports = function () {
     this.Given(/^I do not supply an image$/, function () {
         this.image = '';
@@ -79,16 +89,23 @@ module.exports = function () {
         return Promise.resolve();
     });
 
+    this.Given(/^a previous job is left running$/, {timeout: two_minutes}, function () {
+        return shell.execute('vagrant destroy -f', {cwd: 'temp'}).then(function () {
+            return fs.writeFile('temp/Vagrantfile', `
+Vagrant.configure(2) do |config|
+  config.vm.box = "hashicorp/precise64"
+  config.vm.box_check_update = false
+end
+`);
+        }).then(function () {
+            return shell.execute('vagrant up', {cwd: 'temp'});
+        });
+    });
+
     this.When(/^I run the job$/, {timeout: two_minutes}, function () {
         var world = this;
 
-        var jobCommand = [
-            '../bin/limbus-ci job',
-            world.image,
-            world.script
-        ].join(' ');
-
-        return shell.execute(jobCommand, {cwd: 'temp'}).then(function (stdout) {
+        return executeJob(world.image, world.script).then(function (stdout) {
             world.stdout = stdout;
             return Promise.resolve();
         }, function (error) {
@@ -99,7 +116,7 @@ module.exports = function () {
 
     this.Then(/^I should get a completion status of '(\w*)'$/, function (status) {
         if (this.error) {
-            return Promise.reject(error);
+            return Promise.reject(this.error);
         }
 
         return parseResult(this.stdout).then(function (result) {
@@ -113,7 +130,7 @@ module.exports = function () {
 
     this.Then(/^I should get a log containing '(.+)'$/, function (text) {
         if (this.error) {
-            return Promise.reject(error);
+            return Promise.reject(this.error);
         }
 
         return parseResult(this.stdout).then(function (result) {
@@ -129,7 +146,11 @@ module.exports = function () {
         if (this.error.stderr.indexOf(text) !== -1) {
             return Promise.resolve();
         } else {
-            return Promise.reject(new Error('Expected an error \'' + text + '\' in:\n' + this.stderr));
+            return Promise.reject(new Error('Expected an error \'' + text + '\' in:\n' + this.error.stderr));
         }
+    });
+
+    this.Then('stop the current job', function () {
+        return shell.execute('vagrant destroy -f', {cwd: 'temp'});
     });
 };

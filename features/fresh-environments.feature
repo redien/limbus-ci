@@ -21,3 +21,11 @@ Feature: Fresh Environments
         And I supply a script that makes sure that the file does not exist
         When I run the job
         Then I should get a completion status of 'success'
+
+    Scenario: A previous job is left running
+        Given a previous job is left running
+        And I supply an image
+        And I supply a succeeding script
+        When I run the job
+        Then I should get an error saying "a job is already running"
+        And stop the current job

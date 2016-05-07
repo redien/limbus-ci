@@ -14,6 +14,18 @@ var commander = require('commander');
 var shell = require('../utilities/shell.js');
 var fs = require('../utilities/filesystem.js');
 
+var vagrantAssertNotRunning = function () {
+    return shell.execute('vagrant status').then(function (stdout) {
+        if (stdout.match(/default\s+running/g)) {
+            return Promise.reject(new Error('a job is already running'));
+        } else {
+            return Promise.resolve();
+        }
+    }, function () {
+        return Promise.resolve();
+    });
+};
+
 var vagrantInit = function (image, script) {
     return fs.deleteFile('Vagrantfile')
     .then(function (exists) {
@@ -45,7 +57,10 @@ var job = function (image, script) {
         return Promise.resolve(pending);
     }
 
-    return vagrantInit(image, script)
+    return vagrantAssertNotRunning()
+        .then(function () {
+            return vagrantInit(image, script);
+        })
         .then(vagrantUp)
         .then(function (stdout) {
             return vagrantDestroy().then(function () {
