@@ -24,7 +24,7 @@ var vagrantInit = function (image, script) {
 Vagrant.configure(2) do |config|
   config.vm.box = "${image}"
   config.vm.box_check_update = false
-  config.vm.provision "shell", path: "provisioning_script.sh"
+  config.vm.provision "shell", path: "provisioning_script.sh", privileged: false
 end
 `)
     });
