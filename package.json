@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "A simple CI solution for testing extremely portable applications.",
   "bin": {
-      "limbus-ci": "bin/limbus-ci"
+    "limbus-ci": "bin/limbus-ci"
   },
   "directories": {},
   "devDependencies": {
@@ -12,7 +12,10 @@
   "scripts": {
     "test": "npm install && cucumberjs",
     "install": "npm run-script build",
-    "build": "rm -f bin/limbus-ci ; mkdir -p temp ; mkdir -p bin ; echo \\#\\!/usr/bin/env node > temp/header && cat temp/header cli/front-end.js > bin/limbus-ci && chmod +x bin/limbus-ci"
+    "prepare": "rm -f bin/limbus-ci ; mkdir -p temp ; mkdir -p bin",
+    "webpack": "webpack cli/front-end.js temp/packed.js --config webpack.config.js",
+    "babel": "babel temp/packed.js > temp/packed.es5.js",
+    "build": "npm run-script prepare ; npm run-script webpack && npm run-script babel && echo \\#\\!/usr/bin/env node > temp/header && cat temp/header temp/packed.es5.js > bin/limbus-ci && chmod +x bin/limbus-ci"
   },
   "repository": {
     "type": "git",
@@ -35,6 +38,9 @@
   },
   "homepage": "https://github.com/redien/limbus-ci",
   "dependencies": {
-    "promise": "^7.1.1"
+    "babel-cli": "^6.8.0",
+    "babel-preset-es2015": "^6.6.0",
+    "promise": "^7.1.1",
+    "webpack": "^1.13.0"
   }
 }
