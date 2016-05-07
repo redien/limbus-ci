@@ -69,6 +69,11 @@ module.exports = function () {
         return fs.writeFile('temp/' + this.script, '#!/bin/sh\ntest ! -e k3xQkqHwe.txt');
     });
 
+    this.Given(/^I supply a script that checks that the current user is not root$/, function () {
+        this.script = 'script.sh';
+        return fs.writeFile('temp/' + this.script, '#!/bin/sh\ntest "$USER" != "root"');
+    });
+
     this.Given(/^I supply a missing image$/, function () {
         this.image = 'missing-image';
         return Promise.resolve();
