@@ -27,65 +27,102 @@ var vagrantAssertNotRunning = function () {
 };
 
 var vagrantInit = function (image, script) {
-    return fs.deleteFile('Vagrantfile')
-    .then(function (exists) {
-        return fs.copyFile(script, 'provisioning_script.sh');
-    })
-    .then(function () {
-        return fs.writeFile('Vagrantfile',
-'Vagrant.configure(2) do |config|\n' +
-'  config.vm.box = "' + image + '"\n' +
-'  config.vm.box_check_update = false\n' +
-'  config.vm.provision "shell", path: "provisioning_script.sh", privileged: false\n' +
-'end\n')
-    });
+    return function () {
+        return fs.deleteFile('Vagrantfile')
+        .then(function (exists) {
+            return fs.copyFile(script, 'provisioning_script.sh');
+        })
+        .then(function () {
+            return fs.writeFile('Vagrantfile',
+    'Vagrant.configure(2) do |config|\n' +
+    '  config.vm.box = "' + image + '"\n' +
+    '  config.vm.box_check_update = false\n' +
+    '  config.vm.provision "shell", path: "provisioning_script.sh", privileged: false\n' +
+    'end\n')
+        });
+    };
 };
 
 var vagrantUp = function () {
-    return shell.execute('vagrant up');
+    return function () {
+        return shell.execute('vagrant up');
+    };
 };
 
 var vagrantDestroy = function () {
     return shell.execute('vagrant destroy -f');
 };
 
-var pending = '{"status": "pending"}';
+var pending = function (format) {
+    return {
+        status: 'pending',
+        format: format
+    };
+};
 
-var job = function (image, script) {
+var job = function (image, script, command) {
     if (!image || !script) {
-        return Promise.resolve(pending);
+        return Promise.resolve(pending(command.format));
     }
 
     return vagrantAssertNotRunning()
-        .then(function () {
-            return vagrantInit(image, script);
-        })
-        .then(vagrantUp)
+        .then(vagrantInit(image, script))
+        .then(vagrantUp())
         .then(function (stdout) {
             return vagrantDestroy().then(function () {
-                return Promise.resolve('{"status": "success", "stdout": ' + JSON.stringify(stdout) + '}');
+                return Promise.resolve({
+                    status: 'success',
+                    log: stdout,
+                    format: command.format
+                });
             });
         }, function (error) {
             if (error.stderr && error.stderr.indexOf('The SSH command responded with a non-zero exit status') !== -1) {
                 return vagrantDestroy().then(function () {
-                    return Promise.resolve('{"status": "failure", "stdout": ' + JSON.stringify(error.stdout) + '}');
+                    return Promise.resolve({
+                        status: 'failure',
+                        log: error.stdout,
+                        format: command.format
+                    });
                 });
             } else if (error.stderr && error.stderr.indexOf('Couldn\'t open file') !== -1) {
-                return Promise.resolve(pending);
+                return Promise.resolve(pending(command.format));
             } else if (error.message.match(/no such file or directory/g)) {
-                return Promise.resolve(pending);
+                return Promise.resolve(pending(command.format));
             } else {
-                return Promise.reject(error);
+                return Promise.reject({
+                    status: 'error',
+                    log: (error.stdout ? error.stdout : error.message),
+                    format: command.format
+                });
             }
         });
 };
 
+var formatResult = function (result) {
+    if (result.format === 'human') {
+        return (result.log || '') + '\n\n' +
+            'Status: ' + result.status + '\n';
+    } else {
+        return JSON.stringify({
+            status: result.status,
+            log: result.log
+        });
+    }
+};
+
 var executeCommand = function (command) {
     return function () {
-        command.apply(null, arguments).then(function (stdout) {
-            console.log(stdout);
+        command.apply(null, arguments).then(function (result) {
+            console.log(formatResult(result));
+
         }, function (error) {
-            console.error(error);
+            if (error.status === 'error') {
+                console.log(formatResult(error));
+            } else {
+                console.error(error);
+            }
+
             process.exit(-1);
         });
     };
@@ -96,6 +133,7 @@ commander
 
 commander
     .command('job <image> <script>')
+    .option('-f, --format <format>', 'Format of output')
     .action(executeCommand(job));
 
 commander.parse(process.argv);

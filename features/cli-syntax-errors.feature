@@ -17,10 +17,15 @@ Feature: CLI Syntax Errors
     Scenario: Running a job without an image
         Given I do not supply an image
         When I run the job
-        Then I should get an error saying "error: missing required argument `image'"
+        Then I should get an interface error saying "error: missing required argument `image'"
 
     Scenario: Running a job without a script
         Given I supply an image
         And I do not supply a script
         When I run the job
-        Then I should get an error saying "error: missing required argument `script'"
+        Then I should get an interface error saying "error: missing required argument `script'"
+
+    Scenario: Running a job with unknown option
+        Given I use the option 'unknown' with value 'nil'
+        When I run the job
+        Then I should get an interface error saying "error: unknown option `--unknown'"

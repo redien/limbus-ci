@@ -25,9 +25,10 @@ var parseResult = function (stdout) {
     }
 };
 
-var executeJob = function (image, script) {
+var executeJob = function (image, script, flags) {
     var jobCommand = [
         '../bin/limbus-ci job',
+        flags || '',
         image,
         script
     ].join(' ');
@@ -35,14 +36,27 @@ var executeJob = function (image, script) {
     return shell.execute(jobCommand, {cwd: 'temp'});
 };
 
+var writeSucceedingScript = function (world) {
+    world.script = 'succeeding_script.sh';
+    return fs.writeFile('temp/' + world.script, '#!/bin/sh\necho Success');
+};
+
+var writeFailingScript = function (world) {
+    world.script = 'failing_script.sh';
+    return fs.writeFile('temp/' + world.script, '#!/bin/sh\ncommand-that-does-not-exist-should-fail');
+};
+
+var writeScriptWithContents = function (world, contents) {
+    world.script = 'script.sh';
+    return fs.writeFile('temp/' + world.script, contents);
+};
+
 var leaveRunning = function () {
-    shell.execute('vagrant destroy -f', {cwd: 'temp'}).then(function () {
-        return fs.writeFile('temp/Vagrantfile',
-            'Vagrant.configure(2) do |config|\n' +
-                'config.vm.box = "' + defaultImage + '"\n' +
-                'config.vm.box_check_update = false\n' +
-            'end\n');
-    }).then(function () {
+    return fs.writeFile('temp/Vagrantfile',
+        'Vagrant.configure(2) do |config|\n' +
+            'config.vm.box = "' + defaultImage + '"\n' +
+            'config.vm.box_check_update = false\n' +
+        'end\n').then(function () {
         return shell.execute('vagrant up', {cwd: 'temp'});
     });
 };
@@ -54,7 +68,7 @@ module.exports = function () {
     });
 
     this.Given(/^I supply an image$/, function () {
-        this.image = 'hashicorp/precise64';
+        this.image = defaultImage;
         return Promise.resolve();
     });
 
@@ -69,18 +83,15 @@ module.exports = function () {
     });
 
     this.Given(/^I supply a succeeding script$/, function () {
-        this.script = 'succeeding_script.sh';
-        return fs.writeFile('temp/' + this.script, '#!/bin/sh\necho Success');
+        return writeSucceedingScript(this);
     });
 
     this.Given(/^I supply a failing script$/, function () {
-        this.script = 'failing_script.sh';
-        return fs.writeFile('temp/' + this.script, '#!/bin/sh\ncommand-that-does-not-exist-should-fail');
+        return writeFailingScript(this);
     });
 
     this.Given(/^I supply a script with the contents:$/, function (contents) {
-        this.script = 'script.sh';
-        return fs.writeFile('temp/' + this.script, contents);
+        return writeScriptWithContents(this, contents);
     });
 
     this.Given(/^I supply a script that writes a file$/, function () {
@@ -107,23 +118,50 @@ module.exports = function () {
         return leaveRunning();
     });
 
+    this.Given(/^I use the option '([^\']+)' with value '([^\']+)'$/, function (option, value) {
+        this.flags = (this.flags ? this.flags : '') + ' --' + option + ' ' + value;
+    });
+
+    this.Given(/^I have a pending job$/, function () {
+        this.image = 'missing-image';
+        this.script = 'missing-script';
+        return Promise.resolve();
+    });
+
+    this.Given(/^I have a succeeding job$/, function () {
+        this.image = defaultImage;
+        return writeSucceedingScript(this);
+    });
+
+    this.Given(/^I have a failing job$/, function () {
+        this.image = defaultImage;
+        return writeFailingScript(this);
+    });
+
+    this.Given(/^I have a job with errors$/, {timeout: two_minutes}, function () {
+        var world = this;
+        this.image = defaultImage;
+        return leaveRunning().then(function () {
+            return writeFailingScript(world);
+        });
+    });
+
     this.When(/^I run the job$/, {timeout: two_minutes}, function () {
         var world = this;
 
-        return executeJob(world.image, world.script).then(function (stdout) {
+        return executeJob(world.image, world.script, world.flags).then(function (stdout) {
             world.stdout = stdout;
             return Promise.resolve();
         }, function (error) {
+            if (error.stdout) {
+                world.stdout = error.stdout;
+            }
             world.error = error;
             return Promise.resolve();
         });
     });
 
     this.Then(/^I should get a completion status of '(\w*)'$/, function (status) {
-        if (this.error) {
-            return Promise.reject(this.error);
-        }
-
         return parseResult(this.stdout).then(function (result) {
             if (result.status === status) {
                 return Promise.resolve();
@@ -134,28 +172,43 @@ module.exports = function () {
     });
 
     this.Then(/^I should get a log containing '(.+)'$/, function (text) {
-        if (this.error) {
-            return Promise.reject(this.error);
-        }
-
         return parseResult(this.stdout).then(function (result) {
-            if (result.stdout.indexOf(text) !== -1) {
+            if (result.log.indexOf(text) !== -1) {
                 return Promise.resolve();
             } else {
-                return Promise.reject(new Error('Expected the log to contain \'' + text + '\' in:\n' + result.stdout));
+                return Promise.reject(new Error('Expected the log to contain \'' + text + '\' in:\n' + result.log));
             }
         });
     });
 
-    this.Then('I should get an error saying "$text"', function (text) {
-        if (this.error.stderr.indexOf(text) !== -1) {
+    this.Then('I should get an interface error saying "$text"', function (text) {
+        if (!this.error) {
+            return Promise.reject(new Error('Expected an error'));
+        }
+
+        if (this.error.message.indexOf(text) !== -1) {
             return Promise.resolve();
         } else {
-            return Promise.reject(new Error('Expected an error \'' + text + '\' in:\n' + this.error.stderr));
+            return Promise.reject(new Error('Expected an error \'' + text + '\' in:\n' + this.error.message));
         }
     });
 
-    this.Then('stop the current job', function () {
-        return shell.execute('vagrant destroy -f', {cwd: 'temp'});
+    this.Then('I should get a runtime error saying "$text"', function (text) {
+        return parseResult(this.error.stdout).then(function (result) {
+            if (result.log.indexOf(text) !== -1) {
+                return Promise.resolve();
+            } else {
+                return Promise.reject(new Error('Expected an error \'' + text + '\' in:\n' + result.log));
+            }
+        });
+    });
+
+    this.Then(/^the output should include:$/, function (string) {
+        if (this.stdout && this.stdout.indexOf(string) !== -1) {
+            return Promise.resolve();
+        } else {
+            console.log(this.error);
+            return Promise.reject(new Error('Expected stdout to include ' + string + ' but got:\n' + this.stdout));
+        }
     });
 };
