@@ -13,7 +13,7 @@ var Promise = require('promise');
 var shell = require('../../utilities/shell.js');
 var fs = require('../../utilities/filesystem.js');
 
-var defaultImage = 'hashicorp/precise64';
+var defaultImage = 'moszeed/boot2docker';
 
 var two_minutes = 2 * 60 * 1000;
 
