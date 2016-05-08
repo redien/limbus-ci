@@ -13,6 +13,8 @@ var Promise = require('promise');
 var shell = require('../../utilities/shell.js');
 var fs = require('../../utilities/filesystem.js');
 
+var defaultImage = 'hashicorp/precise64';
+
 var two_minutes = 2 * 60 * 1000;
 
 var parseResult = function (stdout) {
@@ -31,6 +33,18 @@ var executeJob = function (image, script) {
     ].join(' ');
 
     return shell.execute(jobCommand, {cwd: 'temp'});
+};
+
+var leaveRunning = function () {
+    shell.execute('vagrant destroy -f', {cwd: 'temp'}).then(function () {
+        return fs.writeFile('temp/Vagrantfile',
+            'Vagrant.configure(2) do |config|\n' +
+                'config.vm.box = "' + defaultImage + '"\n' +
+                'config.vm.box_check_update = false\n' +
+            'end\n');
+    }).then(function () {
+        return shell.execute('vagrant up', {cwd: 'temp'});
+    });
 };
 
 module.exports = function () {
@@ -90,16 +104,7 @@ module.exports = function () {
     });
 
     this.Given(/^a previous job is left running$/, {timeout: two_minutes}, function () {
-        return shell.execute('vagrant destroy -f', {cwd: 'temp'}).then(function () {
-            return fs.writeFile('temp/Vagrantfile', `
-Vagrant.configure(2) do |config|
-  config.vm.box = "hashicorp/precise64"
-  config.vm.box_check_update = false
-end
-`);
-        }).then(function () {
-            return shell.execute('vagrant up', {cwd: 'temp'});
-        });
+        return leaveRunning();
     });
 
     this.When(/^I run the job$/, {timeout: two_minutes}, function () {

@@ -13,9 +13,7 @@
     "test": "npm install && cucumberjs",
     "install": "npm run-script build",
     "prepare": "rm -f bin/limbus-ci ; mkdir -p temp ; mkdir -p bin",
-    "webpack": "webpack cli/front-end.js temp/packed.js --config webpack.config.js",
-    "babel": "babel temp/packed.js > temp/packed.es5.js",
-    "build": "npm run-script prepare ; npm run-script webpack && npm run-script babel && echo \\#\\!/usr/bin/env node > temp/header && cat temp/header temp/packed.es5.js > bin/limbus-ci && chmod +x bin/limbus-ci"
+    "build": "npm run-script prepare ; echo \\#\\!/usr/bin/env node > temp/header && cat temp/header cli/front-end.js > bin/limbus-ci && chmod +x bin/limbus-ci"
   },
   "repository": {
     "type": "git",

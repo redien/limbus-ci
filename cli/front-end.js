@@ -32,13 +32,12 @@ var vagrantInit = function (image, script) {
         return fs.copyFile(script, 'provisioning_script.sh');
     })
     .then(function () {
-        return fs.writeFile('Vagrantfile', `
-Vagrant.configure(2) do |config|
-  config.vm.box = "${image}"
-  config.vm.box_check_update = false
-  config.vm.provision "shell", path: "provisioning_script.sh", privileged: false
-end
-`)
+        return fs.writeFile('Vagrantfile',
+'Vagrant.configure(2) do |config|\n' +
+'  config.vm.box = "' + image + '"\n' +
+'  config.vm.box_check_update = false\n' +
+'  config.vm.provision "shell", path: "provisioning_script.sh", privileged: false\n' +
+'end\n')
     });
 };
 
