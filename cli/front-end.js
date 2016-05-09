@@ -14,6 +14,20 @@ var commander = require('commander');
 var shell = require('../utilities/shell.js');
 var fs = require('../utilities/filesystem.js');
 
+var acceptanceTestInjectedString = '';
+if (process.env.LIMBUS_CI_ACCEPTANCE_TEST === 'true') {
+    acceptanceTestInjectedString =
+    // Some libvirt configuration is added for running acceptance tests
+    '   config.vm.provider :libvirt do |libvirt|\n' +
+    // We use a small QEMU compatible box
+    '      config.vm.box = "tmatilai/openbsd-5.7"\n' +
+    // We force the driver to qemu when using provider libvirt.
+    // This is useful as the acceptance tests have to be able
+    // to run a VM inside a VM which QEMU supports.
+    '      libvirt.driver = "qemu"\n' +
+    '   end\n';
+}
+
 var vagrantAssertNotRunning = function () {
     return shell.execute('vagrant status').then(function (stdout) {
         if (stdout.match(/default\s+running/g)) {
@@ -35,9 +49,10 @@ var vagrantInit = function (image, script) {
         .then(function () {
             return fs.writeFile('Vagrantfile',
     'Vagrant.configure(2) do |config|\n' +
-    '  config.vm.box = "' + image + '"\n' +
-    '  config.vm.box_check_update = false\n' +
-    '  config.vm.provision "shell", path: "provisioning_script.sh", privileged: false\n' +
+    '   config.vm.box = "' + image + '"\n' +
+    '   config.vm.box_check_update = false\n' +
+    acceptanceTestInjectedString +
+    '   config.vm.provision "shell", path: "provisioning_script.sh", privileged: false\n' +
     'end\n')
         });
     };

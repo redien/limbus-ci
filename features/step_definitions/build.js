@@ -54,8 +54,8 @@ var writeScriptWithContents = function (world, contents) {
 var leaveRunning = function () {
     return fs.writeFile('temp/Vagrantfile',
         'Vagrant.configure(2) do |config|\n' +
-            'config.vm.box = "' + defaultImage + '"\n' +
-            'config.vm.box_check_update = false\n' +
+        '   config.vm.box = "' + defaultImage + '"\n' +
+        '   config.vm.box_check_update = false\n' +
         'end\n').then(function () {
         return shell.execute('vagrant up', {cwd: 'temp'});
     });
