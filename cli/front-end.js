@@ -18,9 +18,9 @@ var acceptanceTestInjectedString = '';
 if (process.env.LIMBUS_CI_ACCEPTANCE_TEST === 'true') {
     acceptanceTestInjectedString =
     // Some libvirt configuration is added for running acceptance tests
-    '   config.vm.provider :libvirt do |libvirt|\n' +
-    // We use a small QEMU compatible box
-    '      config.vm.box = "tmatilai/openbsd-5.7"\n' +
+    '   config.vm.provider :libvirt do |libvirt, override|\n' +
+    // Override with a small QEMU compatible box
+    '      override.vm.box = "tmatilai/openbsd-5.7"\n' +
     // We force the driver to qemu when using provider libvirt.
     // This is useful as the acceptance tests have to be able
     // to run a VM inside a VM which QEMU supports.
