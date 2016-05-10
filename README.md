@@ -12,7 +12,6 @@ limbus-ci provisions virtual machines using [Vagrant](https://www.vagrantup.com)
 #### Table of contents
 * [Installation](#installation)
 * [Usage](#usage)
-* [Continuous Integration](#continuous-integration)
 * [Development](#development)
 * [Roadmap](#roadmap)
 * [Copyright](#copyright)
@@ -53,16 +52,6 @@ To run a job with a specific VM image use:
 ```
 limbus-ci run job <image> <script>
 ```
-
-<a name="continuous-integration"></a>
-## Continuous Integration
-Acceptance and unit tests are automatically run against all supported platforms.
-Tests are run using limbus-ci.
-
-#### Integration matrix
-| Operating System | Build Status |
-| :--------------- | :----------: |
-|||
 
 <a name="development"></a>
 ## Development
