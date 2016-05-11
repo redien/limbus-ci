@@ -10,7 +10,7 @@
     "cucumber": "^0.10.2"
   },
   "scripts": {
-    "test": "npm install && cucumberjs",
+    "test": "shell-scripts/download-acceptance-test-images.sh && npm install && cucumberjs",
     "install": "npm run-script build",
     "prepare": "rm -f bin/limbus-ci ; mkdir -p temp ; mkdir -p bin",
     "build": "npm run-script prepare ; echo \\#\\!/usr/bin/env node > temp/header && cat temp/header cli/front-end.js > bin/limbus-ci && chmod +x bin/limbus-ci"
@@ -37,6 +37,7 @@
   "homepage": "https://github.com/redien/limbus-ci",
   "dependencies": {
     "commander": "^2.9.0",
+    "indent-string": "^2.1.0",
     "promise": "^7.1.1"
   }
 }

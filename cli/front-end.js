@@ -11,46 +11,86 @@
 
 var Promise = require('promise');
 var commander = require('commander');
-var shell = require('../utilities/shell.js');
-var fs = require('../utilities/filesystem.js');
+var shell = require('../utilities/shell');
+var fs = require('../utilities/filesystem');
+var sh = require('../installation-scripts/sh');
+
+var limbusCiDirectoryPath = '.limbusci';
+
+var makeInstallScriptString = function () {
+    var string = '';
+    for (var command in sh.installScripts) {
+        if (sh.installScripts.hasOwnProperty(command)) {
+            string += '   config.vm.provision "file", source: "install_' + command + '.sh", destination: "install_' + command + '.sh"\n';
+            // Set execution bit on scripts
+            string += '   config.vm.provision "shell", inline: "sudo chmod 744 ~/install_' + command + '.sh", privileged: false\n';
+        }
+    }
+
+    return string;
+};
+
+var writeInstallScripts = function () {
+    var promise = Promise.resolve();
+    for (var command in sh.installScripts) {
+        if (sh.installScripts.hasOwnProperty(command)) {
+            (function (command) {
+                promise = promise.then(function () {
+                    return fs.writeFile(limbusCiDirectoryPath + '/install_' + command + '.sh', sh.installScripts[command]);
+                });
+            })(command);
+        }
+    }
+    return promise;
+};
+
+var initLimbusCiDirectory = function () {
+    return fs.createDirectory(limbusCiDirectoryPath);
+};
 
 var vagrantAssertNotRunning = function () {
-    return shell.execute('vagrant status').then(function (stdout) {
-        if (stdout.match(/default\s+running/g)) {
-            return Promise.reject(new Error('a job is already running'));
-        } else {
+    return function () {
+        return shell.execute('vagrant status', {cwd: limbusCiDirectoryPath}).then(function (stdout) {
+            if (stdout.match(/default\s+running/g)) {
+                return Promise.reject(new Error('a job is already running'));
+            } else {
+                return Promise.resolve();
+            }
+        }, function () {
             return Promise.resolve();
-        }
-    }, function () {
-        return Promise.resolve();
-    });
+        });
+    };
 };
 
 var vagrantInit = function (image, script) {
     return function () {
-        return fs.deleteFile('Vagrantfile')
+        return fs.deleteFile(limbusCiDirectoryPath + '/Vagrantfile')
         .then(function (exists) {
-            return fs.copyFile(script, 'provisioning_script.sh');
+            return fs.copyFile(script, limbusCiDirectoryPath + '/provisioning_script.sh');
         })
         .then(function () {
-            return fs.writeFile('Vagrantfile',
+            return writeInstallScripts();
+        })
+        .then(function () {
+            return fs.writeFile(limbusCiDirectoryPath + '/Vagrantfile',
     'Vagrant.configure(2) do |config|\n' +
     '   config.vm.box = "' + image + '"\n' +
     '   config.vm.box_check_update = false\n' +
+    makeInstallScriptString() +
     '   config.vm.provision "shell", path: "provisioning_script.sh", privileged: false\n' +
-    'end\n')
+    'end\n');
         });
     };
 };
 
 var vagrantUp = function () {
     return function () {
-        return shell.execute('vagrant up');
+        return shell.execute('vagrant up', {cwd: limbusCiDirectoryPath});
     };
 };
 
 var vagrantDestroy = function () {
-    return shell.execute('vagrant destroy -f');
+    return shell.execute('vagrant destroy -f', {cwd: limbusCiDirectoryPath});
 };
 
 var pending = function (format) {
@@ -65,7 +105,8 @@ var job = function (image, script, command) {
         return Promise.resolve(pending(command.format));
     }
 
-    return vagrantAssertNotRunning()
+    return initLimbusCiDirectory()
+        .then(vagrantAssertNotRunning())
         .then(vagrantInit(image, script))
         .then(vagrantUp())
         .then(function (stdout) {

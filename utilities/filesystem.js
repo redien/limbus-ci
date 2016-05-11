@@ -23,6 +23,9 @@ module.exports.writeFile = writeFile;
 var readFile = Promise.denodeify(require('fs').readFile);
 module.exports.readFile = readFile;
 
+var mkdir = Promise.denodeify(require('fs').mkdir);
+module.exports.mkdir = mkdir;
+
 var copyFile = function (source, destination) {
     return readFile(source).then(function (contents) {
         return writeFile(destination, contents);
@@ -49,3 +52,14 @@ var deleteFile = function (path) {
     });
 };
 module.exports.deleteFile = deleteFile;
+
+var createDirectory = function (path) {
+    return exists(path).then(function (exists) {
+        if (!exists) {
+            return mkdir(path);
+        } else {
+            return Promise.resolve();
+        }
+    });
+};
+module.exports.createDirectory = createDirectory;

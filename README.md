@@ -53,6 +53,15 @@ To run a job with a specific VM image use:
 limbus-ci run job <image> <script>
 ```
 
+limbus-ci creates a folder named `.limbusci` in the folder it is run. It uses it
+to store runtime specific things. You should not commit this folder into your revision control
+so it is useful to exclude it.
+
+For example when using git, add the following line to your `.gitignore`:
+```
+/.limbusci/
+```
+
 <a name="development"></a>
 ## Development
 [![Dependencies](https://david-dm.org/redien/limbus-ci.svg)](https://david-dm.org/redien/limbus-ci) [![devDependencies](https://david-dm.org/redien/limbus-ci/dev-status.svg)](https://david-dm.org/redien/limbus-ci#info=devDependencies)
@@ -66,12 +75,10 @@ npm install
 #### Test
 limbus-ci performs acceptance testing using Cucumber.js.
 
-Run both acceptance- and unit tests using:
+Run tests using:
 ```
 npm test
 ```
-
-To run each separately, use `npm run unit-test` for unit tests and `npm run integration-test` for integration tests.
 
 #### Code coverage
 [![Coverage Status](https://img.shields.io/coveralls/redien/limbus-ci.svg)](https://coveralls.io/r/redien/limbus-ci?branch=master)

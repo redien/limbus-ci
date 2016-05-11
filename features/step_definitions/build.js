@@ -13,9 +13,11 @@ var Promise = require('promise');
 var shell = require('../../utilities/shell.js');
 var fs = require('../../utilities/filesystem.js');
 
+var limbusCiDirectoryPath = 'temp/.limbusci';
+
 var defaultImage = 'moszeed/boot2docker';
 
-var two_minutes = 2 * 60 * 1000;
+var twenty_minutes = 20 * 60 * 1000;
 
 var parseResult = function (stdout) {
     try {
@@ -52,12 +54,12 @@ var writeScriptWithContents = function (world, contents) {
 };
 
 var leaveRunning = function () {
-    return fs.writeFile('temp/Vagrantfile',
+    return fs.writeFile(limbusCiDirectoryPath + '/Vagrantfile',
         'Vagrant.configure(2) do |config|\n' +
         '   config.vm.box = "' + defaultImage + '"\n' +
         '   config.vm.box_check_update = false\n' +
         'end\n').then(function () {
-        return shell.execute('vagrant up', {cwd: 'temp'});
+        return shell.execute('vagrant up', {cwd: limbusCiDirectoryPath});
     });
 };
 
@@ -69,6 +71,11 @@ module.exports = function () {
 
     this.Given(/^I supply an image$/, function () {
         this.image = defaultImage;
+        return Promise.resolve();
+    });
+
+    this.Given(/^I supply the image '([^\']*)'$/, function (image) {
+        this.image = image;
         return Promise.resolve();
     });
 
@@ -114,7 +121,7 @@ module.exports = function () {
         return Promise.resolve();
     });
 
-    this.Given(/^a previous job is left running$/, {timeout: two_minutes}, function () {
+    this.Given(/^a previous job is left running$/, {timeout: twenty_minutes}, function () {
         return leaveRunning();
     });
 
@@ -138,7 +145,7 @@ module.exports = function () {
         return writeFailingScript(this);
     });
 
-    this.Given(/^I have a job with errors$/, {timeout: two_minutes}, function () {
+    this.Given(/^I have a job with errors$/, {timeout: twenty_minutes}, function () {
         var world = this;
         this.image = defaultImage;
         return leaveRunning().then(function () {
@@ -146,7 +153,7 @@ module.exports = function () {
         });
     });
 
-    this.When(/^I run the job$/, {timeout: two_minutes}, function () {
+    this.When(/^I run the job$/, {timeout: twenty_minutes}, function () {
         var world = this;
 
         return executeJob(world.image, world.script, world.flags).then(function (stdout) {
