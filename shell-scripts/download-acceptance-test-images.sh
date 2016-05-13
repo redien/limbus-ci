@@ -17,7 +17,12 @@ mkdir -p $limbusci_directory_path
 
 download_image() {
     echo Downloading $1...
-    vagrant box add --provider virtualbox $1 > $status_file_path 2>&1
+    if vagrant -v | grep 'Vagrant 1\.4'; then
+        vagrant box add $1 $2 --provider virtualbox > $status_file_path 2>&1
+    else
+        vagrant box add --provider virtualbox --name $1 $2 > $status_file_path 2>&1
+    fi
+
     if cat $status_file_path | grep -q "Successfully added box '$1'";
     then
         rm $status_file_path
