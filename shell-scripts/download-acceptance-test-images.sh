@@ -49,7 +49,7 @@ then
     download_image bento/fedora-23 https://vagrantcloud.com/bento/boxes/fedora-23/versions/2.2.6/providers/virtualbox.box
     download_image bento/centos-5.11 https://vagrantcloud.com/bento/boxes/centos-5.11/versions/2.2.6/providers/virtualbox.box
     download_image bento/centos-6.7 https://vagrantcloud.com/bento/boxes/centos-6.7/versions/2.2.6/providers/virtualbox.box
-    download_image bento/centos-7.1 https://vagrantcloud.com/bento/boxes/centos-7.1/versions/2.1.20150713212346/providers/virtualbox.box
+    download_image bento/centos-7.1 https://vagrantcloud.com/bento/boxes/centos-7.1/versions/2.2.2/providers/virtualbox.box
     download_image bento/centos-7.2 https://vagrantcloud.com/bento/boxes/centos-7.2/versions/2.2.6/providers/virtualbox.box
     download_image bento/freebsd-9.3 https://vagrantcloud.com/bento/boxes/freebsd-9.3/versions/2.2.6/providers/virtualbox.box
     download_image bento/freebsd-10.2 https://vagrantcloud.com/bento/boxes/freebsd-10.2/versions/2.2.3/providers/virtualbox.box
