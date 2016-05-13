@@ -43,6 +43,6 @@ Feature: Node.js Install Script
             | bento/debian-8.1 |
             | bento/debian-8.3 |
             | bento/debian-8.4 |
-            | hashicorp/precise64 |
+            | bento/ubuntu-12.04 |
             | bento/ubuntu-14.04 |
             | bento/ubuntu-16.04 |
