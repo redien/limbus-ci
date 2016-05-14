@@ -75,7 +75,9 @@ var vagrantInit = function (image, script) {
             return fs.writeFile(limbusCiDirectoryPath + '/Vagrantfile',
     'Vagrant.configure(2) do |config|\n' +
     '   config.vm.box = "' + image + '"\n' +
-    '   config.vm.box_check_update = false\n' +
+    '   if Vagrant::VERSION !~ /^1\.[0-4]/\n' +
+    '      config.vm.box_check_update = false\n' +
+    '   end\n' +
     makeInstallScriptString() +
     '   config.vm.provision "shell", path: "provisioning_script.sh", privileged: false\n' +
     'end\n');
